@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+from uuid import UUID
 from .config import DATA_DIR
 
 
@@ -15,6 +16,16 @@ def ensure_data_dir():
 
 def get_conversation_path(conversation_id: str) -> str:
     """Get the file path for a conversation."""
+    # Validate at the filesystem boundary too: callers can bypass the HTTP API,
+    # and a stored document's id is used again when saving it.
+    if not isinstance(conversation_id, str):
+        raise ValueError("Conversation ID must be a UUID string")
+    try:
+        parsed = UUID(conversation_id)
+    except ValueError as exc:
+        raise ValueError("Conversation ID must be a canonical UUID") from exc
+    if str(parsed) != conversation_id:
+        raise ValueError("Conversation ID must be a canonical UUID")
     return os.path.join(DATA_DIR, f"{conversation_id}.json")
 
 
