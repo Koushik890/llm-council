@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any
+from uuid import UUID
 import uuid
 import json
 import asyncio
@@ -243,20 +244,21 @@ async def create_conversation(request: CreateConversationRequest):
 
 
 @app.get("/api/conversations/{conversation_id}", response_model=Conversation)
-async def get_conversation(conversation_id: str):
+async def get_conversation(conversation_id: UUID):
     """Get a specific conversation with all its messages."""
-    conversation = storage.get_conversation(conversation_id)
+    conversation = storage.get_conversation(str(conversation_id))
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conversation
 
 
 @app.post("/api/conversations/{conversation_id}/message")
-async def send_message(conversation_id: str, request: SendMessageRequest):
+async def send_message(conversation_id: UUID, request: SendMessageRequest):
     """
     Send a message and run the 3-stage council process.
     Returns the complete response with all stages.
     """
+    conversation_id = str(conversation_id)
     # Check if conversation exists
     conversation = storage.get_conversation(conversation_id)
     if conversation is None:
@@ -293,11 +295,12 @@ async def send_message(conversation_id: str, request: SendMessageRequest):
 
 
 @app.post("/api/conversations/{conversation_id}/message/stream")
-async def send_message_stream(conversation_id: str, request: SendMessageRequest):
+async def send_message_stream(conversation_id: UUID, request: SendMessageRequest):
     """
     Send a message and stream the 3-stage council process.
     Returns Server-Sent Events as each stage completes.
     """
+    conversation_id = str(conversation_id)
     # Check if conversation exists
     conversation = storage.get_conversation(conversation_id)
     if conversation is None:
@@ -371,4 +374,4 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="127.0.0.1", port=8001)

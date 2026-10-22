@@ -80,6 +80,8 @@ Just like academic paper reviews, **blind evaluation prevents bias**:
 
 ## Quick Start
 
+The bundled backend binds to `127.0.0.1:8001` for local use. It has no multiuser authentication: do not expose it through a network listener, reverse proxy, or tunnel. Local processes can access the API and its saved provider session. Conversation storage accepts canonical UUID identifiers only.
+
 ### Prerequisites
 
 - Python 3.10+ with [uv](https://docs.astral.sh/uv/) package manager
